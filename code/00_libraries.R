@@ -19,6 +19,7 @@ packages <- c("tidyverse", "devtools", "furrr", "readr", "tibble", "dplyr",
              "huxtable", "here", "stargazer", "MASS", "terra", "rgdal", 
              "raster", "gdalUtilities", "exactextractr", "sf", "tmap", 
              "tmaptools", "stars", "rmapshaper", "animation",
-             "mapview", "ggmap", "geosphere")
+             "mapview", "ggmap", "geosphere", "cowplot", "fastDummies", 
+             "patchwork", "forcats")
 
 p_load(char = packages)
