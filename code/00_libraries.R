@@ -20,6 +20,6 @@ packages <- c("tidyverse", "devtools", "furrr", "readr", "tibble", "dplyr",
              "raster", "gdalUtilities", "exactextractr", "sf", "tmap", 
              "tmaptools", "stars", "rmapshaper", "animation",
              "mapview", "ggmap", "geosphere", "cowplot", "fastDummies", 
-             "patchwork", "forcats", "zoo")
+             "patchwork", "forcats", "zoo", "gender")
 
 p_load(char = packages)
