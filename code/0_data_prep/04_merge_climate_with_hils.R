@@ -14,102 +14,82 @@ gc()
 # all required packages
 source("code/00_libraries.R")
 
-# 1 # Read in death counts data
+# 1 # Read in death counts and climate data
 a_death_count <- read_csv("data/death_counts.csv")
+climate_data <- read_csv("data/nyc_1976_2022_climate_data.csv") %>%
+  # drop row names column
+  dplyr::select(-1)
 
-#1# get noaa data
-noaa <- read.csv(file.path(climatepath, noaapath))
 
-# keep only city means
-noaa %<>% subset(NAME == "City means") %>%
-  # drop 2023
-  filter(Year < 2023) %>%
-  # keep relevant variables
-  subset(select = c(DATE, TMAX, TMIN, Year, Month, 
-                    Day, Day_of_year, Week)) %>%
-  # rename variables
-  rename_all(tolower)
-  
-# temperatures need to be divided by 10 to represent celcius
-noaa %<>% mutate(tmin = tmin/10, tmax = tmax/10)
-
-# also generate fahrenheit temperatures
-noaa %<>% mutate(tmin_f = ((tmin * (9/5)) + 32),
-                 tmax_f = ((tmax * (9/5)) + 32))
-
-# get the noaa precip data
-noaa_precip <- read.csv(file.path(climatepath, "nyc_temp_precip_1950.csv"))
-
-# get city means (average of all three stations)
-noaa_precip %<>% group_by(DATE) %>%
-  summarize(precip = mean(PRCP, na.rm = TRUE)) %>%
-  # precip is in tenths of mm, convert to inches
-  mutate(precip = precip / 254) %>%
-  # rename variables to lower case
-  rename_all(tolower) 
-
-# change the date formats to match 
-noaa$date <- ymd(noaa$date)
-noaa_precip$date <- ymd(noaa_precip$date)
-a_death_count$death_date <- ymd(a_death_count$death_date)
-
-# restrict precip years to 1976-2022
-noaa_precip <- noaa_precip %>%
-  filter(year(date) < 2023 & year(date) > 1975)
-
-# merge noaa with adult data using date
-a_merged <- merge(a_death_count, noaa, by.x = "death_date",
+# 2 # Merge the two using date
+use_data <- merge(a_death_count, climate_data, by.x = "death_date",
                   by.y = "date", all = TRUE) %>%
-  # drop 2023
-  filter(year < 2023 & year > 1975) %>% 
-  dplyr::select(-death_year)
+  # Replace NA death count values as zero b/c it didn't match with death records
+  mutate(death_count = ifelse(is.na(death_count), 0, death_count),
+         female_death_count = ifelse(is.na(female_death_count), 0, 
+                                     female_death_count),
+         male_death_count = ifelse(is.na(male_death_count), 0, 
+                                     male_death_count),
+         unknown_sex_death_count = ifelse(is.na(unknown_sex_death_count), 0, 
+                                          unknown_sex_death_count),
+         under65_death_count = ifelse(is.na(under65_death_count), 0, 
+                                        under65_death_count),
+         over65_death_count = ifelse(is.na(over65_death_count), 0,
+                                       over65_death_count),
+         unknown_age_death_count = ifelse(is.na(unknown_age_death_count), 0,
+                                          unknown_age_death_count)) %>%
+  # Keep 1977-2022
+  filter(year >= 1977 & year <= 2022)
 
-# replace NA death count values as zero b/c it didn't match
-a_merged %<>% mutate(death_count = ifelse(is.na(death_count), 0, death_count))
+# Again, check death counts to be sure
+sum(use_data$death_count)
+sum(use_data$female_death_count) + sum(use_data$male_death_count) +
+  sum(use_data$unknown_sex_death_count)
+sum(use_data$under65_death_count) + sum(use_data$over65_death_count) +
+  sum(use_data$unknown_age_death_count)
 
-# merge the precip variable
-a_merged <- merge(a_merged, noaa_precip, by.x = "death_date",
-                  by.y = "date", all = TRUE) %>%
-  # drop 2023
-  filter(year < 2023 & year > 1975) %>% 
-  dplyr::select(-year)
-
-# # bin tmin and tmax data
-# bins <- seq(-10, 110, by = 10)
-# a_merged %<>% mutate(tmin_f_bin = cut(tmin_f, breaks = bins),
-#                      tmax_f_bin = cut(tmax_f, breaks = bins),
-#                      tmin_f_bin = str_sub(tmin_f_bin, start = 2, end = -2),
-#                      tmin_f_bin = str_replace_all(tmin_f_bin, ",", "-"),
-#                      tmax_f_bin = str_sub(tmax_f_bin, start = 2, end = -2),
-#                      tmax_f_bin = str_replace_all(tmax_f_bin, ",", "-"))
-
-# save merged data
-write_csv(a_merged, "use_data/noaa_hils_adults.csv")
-
-#2# read in era5 wet bulb and precip data
-era5 <- read_excel(file.path(climatepath, "era5_dailyaggs.xlsx")) %>%
-  # drop precip variable
-  dplyr::select(-precip)
-
-# change the date formats to match
-era5$date <- make_date(era5$year, month = 1, day = 1) + days(era5$day - 1)
-
-# merge era5 with adult data using date
-a_merged <- merge(a_death_count, era5, by.x = "death_date",
-                  by.y = "date", all = TRUE) %>%
-  # drop 2023
-  filter(year < 2023 & year > 1975) %>% 
-  dplyr::select(-death_year)
-
-# replace NA death count values as zero b/c it didn't match
-a_merged %<>% mutate(death_count = ifelse(is.na(death_count), 0, death_count))
-
-# merge the precip variable
-a_merged <- merge(a_merged, noaa_precip, by.x = "death_date",
-                  by.y = "date", all = TRUE) %>%
-  # drop 2023
-  filter(year < 2023 & year > 1975)
-
-# save merged data
-write_csv(a_merged, "use_data/era5_hils_adults.csv")
+# Create some extra time variables
+use_data <- use_data %>%
+  mutate(month = month(death_date),
+         decade = as.numeric(substring(year, 1, 3)) * 10,
+         day_of_week = weekdays(death_date))
+         
+# Create dummies for bank holidays that are always the same date
+use_data <- use_data %>%
+  mutate(newyear = ifelse(month == 1 & day == 1, 1, 0),
+         july4 = ifelse(month == 7 & day == 4, 1, 0),
+         veterans = ifelse(month == 11 & day == 11, 1, 0),
+         christmas = ifelse(month == 12 & day == 25, 1, 0),
+         # Now, create dummies for holidays that change date
+         thanksgiving = as.integer(month == 11 & 
+                                     day >= 22 &
+                                     day <= 28 &
+                                     day_of_week == "Thursday"),
+         memorial = as.integer(month == 5 &
+                                 day >= 25 &
+                                 day_of_week == "Monday"),
+         presidents = as.integer(month == 2 &
+                                   day >= 15 &
+                                   day <= 21 &
+                                   day_of_week == "Monday"),
+         labor = as.integer(month == 9 &
+                              day <= 7 &
+                              day_of_week == "Monday"),
+         columbus = as.integer(month == 10 &
+                                 day >= 8 &
+                                 day <= 14 &
+                                 day_of_week == "Monday"),
+         # Create dummies for 4 seasons
+         spring = ifelse(month %in% c(3, 4, 5), 1, 0),
+         summer = ifelse(month %in% c(6, 7, 8), 1, 0),
+         fall = ifelse(month %in% c(9, 10, 11), 1, 0),
+         winter = ifelse(month %in% c(12, 1, 2), 1, 0),
+         season = case_when(
+           summer == 1 ~ "Summer",
+           winter == 1 ~ "Winter",
+           fall == 1 ~ "Fall",
+           spring == 1 ~ "Spring"))
+    
+# Save use data
+write_csv(use_data, "data/use_data.csv")
 

@@ -166,6 +166,8 @@ calc_wetbtemp <- function(rh, temp_c) {
 
 process_yearly_data <- function(year, climate_path, nyc_boundary) {
   
+  print(paste0("Working with year: ", year))
+  
   # a # Read Raster Data
   
   # Define the variables to extract from the raw files
@@ -342,7 +344,8 @@ daily_climate_data <- daily_climate_data %>%
       .cols = all_of(vars_for_max),
       .fns = list(
         "3d" = ~ slide_dbl(.x, max, .before = 2, .complete = FALSE),
-        "7d" = ~ slide_dbl(.x, max, .before = 6, .complete = FALSE)
+        "7d" = ~ slide_dbl(.x, max, .before = 6, .complete = FALSE),
+        "10d" = ~ slide_dbl(.x, max, .before = 9, .complete = FALSE)
       ),
       .names = "{.col}_{.fn}"
     ),
@@ -351,7 +354,8 @@ daily_climate_data <- daily_climate_data %>%
       .cols = all_of(vars_for_min),
       .fns = list(
         "3d" = ~ slide_dbl(.x, min, .before = 2, .complete = FALSE),
-        "7d" = ~ slide_dbl(.x, min, .before = 6, .complete = FALSE)
+        "7d" = ~ slide_dbl(.x, min, .before = 6, .complete = FALSE),
+        "10d" = ~ slide_dbl(.x, min, .before = 9, .complete = FALSE)
       ),
       .names = "{.col}_{.fn}"
     ),
@@ -360,7 +364,8 @@ daily_climate_data <- daily_climate_data %>%
       .cols = all_of(vars_for_mean),
       .fns = list(
         "3d" = ~ slide_dbl(.x, mean, .before = 2, .complete = FALSE),
-        "7d" = ~ slide_dbl(.x, mean, .before = 6, .complete = FALSE)
+        "7d" = ~ slide_dbl(.x, mean, .before = 6, .complete = FALSE),
+        "10d" = ~ slide_dbl(.x, mean, .before = 9, .complete = FALSE)
       ),
       .names = "{.col}_{.fn}"
     ),
@@ -371,6 +376,6 @@ daily_climate_data <- daily_climate_data %>%
 glimpse(daily_climate_data)
 
 # Export as csv
-write.csv(daily_climate_data, "data/raw_data/nyc_1976_2022_climate_data.csv")
+write.csv(daily_climate_data, "data/nyc_1976_2022_climate_data.csv")
 
 

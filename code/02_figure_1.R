@@ -100,7 +100,7 @@ ggsave("output/fig1b.png", plot = fig1b, width = 8, height = 6, dpi = 600)
 ## Figure 1 (c): Distribution of unclaimed deaths by age at death
 
 # read in death records data
-death_records <- read_csv("data/death_records.csv")
+death_records <- read_csv("data/raw_data/death_records.csv")
 
 # drop records with missing age and add 0.5 to age to center the histogram
 fig1c_df <- death_records %>%

@@ -104,14 +104,14 @@ ggsave("output/fig3.png", plot = fig3, width = 8, height = 6, dpi = 600)
 # calculate daily averages for each season
 fig4_df <- use_data %>%
   group_by(day_of_year, season) %>%
-  summarise(wetb_minmin = mean(wetb_minmin),
-            wetb_maxmax = mean(wetb_maxmax))
+  summarise(wetb_min_citymin = mean(wetb_min_citymin),
+            wetb_max_citymax = mean(wetb_max_citymax))
 
 # create separate boxplots for each season distribution
 fig4a <- ggplot(fig4_df,
                 aes(fill = factor(season,
                              levels = c("Winter","Spring","Summer", "Fall")),
-                    y = wetb_minmin)) +
+                    y = wetb_min_citymin)) +
   geom_boxplot() +
   theme_light() + 
   scale_fill_manual(values = c("#2E86C1", "#229954", "#CB4335", "#D68910")) +
@@ -137,7 +137,7 @@ fig4a
 fig4b <- ggplot(fig4_df, 
                 aes(fill = factor(season,
                               levels = c("Winter", "Spring", "Summer", "Fall")),
-                    y = wetb_maxmax)) +
+                    y = wetb_max_citymax)) +
   geom_boxplot() +
   theme_light() + 
   scale_fill_manual(values = c("#2E86C1", "#229954", "#CB4335", "#D68910")) +

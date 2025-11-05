@@ -18,8 +18,11 @@ packages <- c("tidyverse", "devtools", "furrr", "readr", "tibble", "dplyr",
              "ggpubr", "ggExtra", "sandwich", "modelsummary", "jtools", 
              "huxtable", "here", "stargazer", "MASS", "terra", "rgdal", 
              "raster", "gdalUtilities", "exactextractr", "sf", "tmap", 
-             "tmaptools", "stars", "rmapshaper", "animation",
+             "tmaptools", "stars", "rmapshaper", "animation", "slider",
              "mapview", "ggmap", "geosphere", "cowplot", "fastDummies", 
-             "patchwork", "forcats", "zoo", "gender")
+             "patchwork", "forcats", "zoo", "gender", "openxlsx", "fixest")
 
-p_load(char = packages)
+# load or install packages using pacman
+pacman::p_load(char = packages, install = TRUE, 
+               update = getOption("pac_update"), character.only = FALSE)
+

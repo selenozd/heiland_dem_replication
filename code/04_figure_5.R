@@ -19,13 +19,14 @@ use_data <- read_csv("data/use_data.csv")
 
 
 ## Run the 7-day regression models again
-era5_7d <- glm.nb(death_count ~ wetb_minmin_7d + wetb_minmin_7d:summer + 
-                    wetb_minmin_7d:spring + wetb_minmin_7d:fall + 
-                    wetb_maxmax_7d + wetb_maxmax_7d:summer + 
-                    wetb_maxmax_7d:spring + wetb_maxmax_7d:fall + summer + 
-                    spring + fall + newyear + july4 + veterans + christmas + 
+era5_7d <- glm.nb(death_count ~ wetb_min_citymin_7d + 
+                    wetb_min_citymin_7d:summer + wetb_min_citymin_7d:spring + 
+                    wetb_min_citymin_7d:fall + wetb_max_citymax_7d + 
+                    wetb_max_citymax_7d:summer + wetb_max_citymax_7d:spring + 
+                    wetb_max_citymax_7d:fall + summer + spring + fall + 
+                    newyear + july4 + veterans + christmas + 
                     thanksgiving + memorial + presidents + labor + columbus + 
-                    precip + relevel(factor(decade), ref = 5) +
+                    precip_in + relevel(factor(decade), ref = 5) +
                     relevel(factor(year), ref = 34), 
                   data = use_data)
 
@@ -35,7 +36,7 @@ noaa_7d <- glm.nb(death_count ~ tmin_f_7d + tmin_f_7d:summer +
                     tmax_f_7d:fall + summer + fall + spring + 
                     newyear + july4 + veterans + christmas + thanksgiving + 
                     memorial + presidents + labor + columbus + 
-                    precip + relevel(factor(decade), ref = 5) +
+                    precip_in + relevel(factor(decade), ref = 5) +
                     relevel(factor(year), ref = 34), 
                   data = use_data)
 
@@ -179,50 +180,50 @@ vcov_era5 <- vcov(era5_7d)
 
 # calculate combined coefficients
 combined_coefs <- c(
-  coef_era5["wetb_maxmax_7d"] + coef_era5["summer:wetb_maxmax_7d"],
-  coef_era5["wetb_minmin_7d"] + coef_era5["wetb_minmin_7d:summer"],
-  coef_era5["wetb_maxmax_7d"] + coef_era5["spring:wetb_maxmax_7d"],
-  coef_era5["wetb_minmin_7d"] + coef_era5["wetb_minmin_7d:spring"],
-  coef_era5["wetb_maxmax_7d"] + coef_era5["fall:wetb_maxmax_7d"],
-  coef_era5["wetb_minmin_7d"] + coef_era5["wetb_minmin_7d:fall"],
-  coef_era5["wetb_maxmax_7d"],
-  coef_era5["wetb_minmin_7d"]
+  coef_era5["wetb_max_citymax_7d"] + coef_era5["summer:wetb_max_citymax_7d"],
+  coef_era5["wetb_min_citymin_7d"] + coef_era5["wetb_min_citymin_7d:summer"],
+  coef_era5["wetb_max_citymax_7d"] + coef_era5["spring:wetb_max_citymax_7d"],
+  coef_era5["wetb_min_citymin_7d"] + coef_era5["wetb_min_citymin_7d:spring"],
+  coef_era5["wetb_max_citymax_7d"] + coef_era5["fall:wetb_max_citymax_7d"],
+  coef_era5["wetb_min_citymin_7d"] + coef_era5["wetb_min_citymin_7d:fall"],
+  coef_era5["wetb_max_citymax_7d"],
+  coef_era5["wetb_min_citymin_7d"]
 )
 
 # calculate combined standard errors
 combined_ses <- c(
-  sqrt(vcov_era5["wetb_maxmax_7d", "wetb_maxmax_7d"] + 
-         vcov_era5["summer:wetb_maxmax_7d", "summer:wetb_maxmax_7d"] +
-         2*vcov_era5["wetb_maxmax_7d", "summer:wetb_maxmax_7d"]),
-  sqrt(vcov_era5["wetb_minmin_7d", "wetb_minmin_7d"] + 
-         vcov_era5["wetb_minmin_7d:summer", "wetb_minmin_7d:summer"] + 
-         2*vcov_era5["wetb_minmin_7d", "wetb_minmin_7d:summer"]),
-  sqrt(vcov_era5["wetb_maxmax_7d", "wetb_maxmax_7d"] + 
-         vcov_era5["spring:wetb_maxmax_7d", "spring:wetb_maxmax_7d"] + 
-         2*vcov_era5["wetb_maxmax_7d", "spring:wetb_maxmax_7d"]),
-  sqrt(vcov_era5["wetb_minmin_7d", "wetb_minmin_7d"] + 
-         vcov_era5["wetb_minmin_7d:spring", "wetb_minmin_7d:spring"] + 
-         2*vcov_era5["wetb_minmin_7d", "wetb_minmin_7d:spring"]),
-  sqrt(vcov_era5["wetb_maxmax_7d", "wetb_maxmax_7d"] + 
-         vcov_era5["fall:wetb_maxmax_7d", "fall:wetb_maxmax_7d"] + 
-         2*vcov_era5["wetb_maxmax_7d", "fall:wetb_maxmax_7d"]),
-  sqrt(vcov_era5["wetb_minmin_7d", "wetb_minmin_7d"] + 
-         vcov_era5["wetb_minmin_7d:fall", "wetb_minmin_7d:fall"] +
-         2*vcov_era5["wetb_minmin_7d", "wetb_minmin_7d:fall"]),
-  sqrt(vcov_era5["wetb_maxmax_7d", "wetb_maxmax_7d"]),
-  sqrt(vcov_era5["wetb_minmin_7d", "wetb_minmin_7d"])
+  sqrt(vcov_era5["wetb_max_citymax_7d", "wetb_max_citymax_7d"] + 
+         vcov_era5["summer:wetb_max_citymax_7d", "summer:wetb_max_citymax_7d"] +
+         2*vcov_era5["wetb_max_citymax_7d", "summer:wetb_max_citymax_7d"]),
+  sqrt(vcov_era5["wetb_min_citymin_7d", "wetb_min_citymin_7d"] + 
+         vcov_era5["wetb_min_citymin_7d:summer", "wetb_min_citymin_7d:summer"] + 
+         2*vcov_era5["wetb_min_citymin_7d", "wetb_min_citymin_7d:summer"]),
+  sqrt(vcov_era5["wetb_max_citymax_7d", "wetb_max_citymax_7d"] + 
+         vcov_era5["spring:wetb_max_citymax_7d", "spring:wetb_max_citymax_7d"] + 
+         2*vcov_era5["wetb_max_citymax_7d", "spring:wetb_max_citymax_7d"]),
+  sqrt(vcov_era5["wetb_min_citymin_7d", "wetb_min_citymin_7d"] + 
+         vcov_era5["wetb_min_citymin_7d:spring", "wetb_min_citymin_7d:spring"] + 
+         2*vcov_era5["wetb_min_citymin_7d", "wetb_min_citymin_7d:spring"]),
+  sqrt(vcov_era5["wetb_max_citymax_7d", "wetb_max_citymax_7d"] + 
+         vcov_era5["fall:wetb_max_citymax_7d", "fall:wetb_max_citymax_7d"] + 
+         2*vcov_era5["wetb_max_citymax_7d", "fall:wetb_max_citymax_7d"]),
+  sqrt(vcov_era5["wetb_min_citymin_7d", "wetb_min_citymin_7d"] + 
+         vcov_era5["wetb_min_citymin_7d:fall", "wetb_min_citymin_7d:fall"] +
+         2*vcov_era5["wetb_min_citymin_7d", "wetb_min_citymin_7d:fall"]),
+  sqrt(vcov_era5["wetb_max_citymax_7d", "wetb_max_citymax_7d"]),
+  sqrt(vcov_era5["wetb_min_citymin_7d", "wetb_min_citymin_7d"])
 )
 
 # assign clean coefficient names
 era5_coefnames = c(
-  "summer:wetb_maxmax_7d" = "Max. temp, Summer",
-  "wetb_minmin_7d:summer" = "Min. temp, Summer",
-  "spring:wetb_maxmax_7d" = "Max. temp, Spring",
-  "wetb_minmin_7d:spring" = "Min. temp, Spring",
-  "fall:wetb_maxmax_7d" = "Max. temp, Fall",
-  "wetb_minmin_7d:fall" = "Min. temp, Fall",
-  "wetb_maxmax_7d" = "Max. temp, Winter",
-  "wetb_minmin_7d" = "Min. temp, Winter"
+  "summer:wetb_max_citymax_7d" = "Max. temp, Summer",
+  "wetb_min_citymin_7d:summer" = "Min. temp, Summer",
+  "spring:wetb_max_citymax_7d" = "Max. temp, Spring",
+  "wetb_min_citymin_7d:spring" = "Min. temp, Spring",
+  "fall:wetb_max_citymax_7d" = "Max. temp, Fall",
+  "wetb_min_citymin_7d:fall" = "Min. temp, Fall",
+  "wetb_max_citymax_7d" = "Max. temp, Winter",
+  "wetb_min_citymin_7d" = "Min. temp, Winter"
 )
 
 # create a data frame for plotting
