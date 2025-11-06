@@ -6,13 +6,13 @@
 ## Date: September 26, 2023
 
 ## Important Note: This script was written to scrape the original Hart Island 
-## Lookup Service website. Since our data collection, the City of New York 
-## has replaced this website with a new platform called Hart Island Loved 
-## One Lookup. The code provided below targets the previous version of the 
-## website and will need to be revised to function with the current platform. 
-## We include it here for transparency and to document our original data 
-## collection methodology, which may be useful for researchers seeking to 
-## understand our approach or adapt it for similar purposes.
+## Lookup Service website. Since our data collection, in Fall 2025, the City
+## of New York has replaced this website with a new platform called Hart
+## Island Loved One Lookup. The code provided below targets the previous 
+## version of the website and will need to be revised to function with the 
+## current platform. We include it here for transparency and to document our 
+## original data collection methodology, which may be useful for researchers 
+## seeking to understand our approach or adapt it for similar purposes.
 
 # 0 # Environment Configuration
 
