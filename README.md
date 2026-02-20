@@ -4,9 +4,10 @@ Replication package for "Extreme Weather and Mortality of Vulnerable Urban
 Populations: An Examination of Temperature and Unclaimed Deaths in New York 
 City", forthcoming in *Demography* (2026).
 
-**Authors:** Frank W. Heiland\*, Selen Ozdogan, Deborah Balk, 
+**Authors:** Frank W. Heiland, Selen Ozdogan, Deborah Balk, 
 Jennifer Brite, and Peter Marcotullio  
-(\* Corresponding author)
+
+**Repository created by:** Selen Ozdogan
 
 ---
 
