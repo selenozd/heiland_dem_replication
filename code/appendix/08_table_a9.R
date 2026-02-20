@@ -9,7 +9,7 @@
 rm(list = ls())
 gc()
 
-# run the libraries script to load (and install if necessaary) 
+# run the libraries script to load (and install if necessary) 
 # all required packages
 source("code/00_libraries.R")
 
@@ -24,7 +24,8 @@ use_data <- cbind(use_data,
                    model.matrix(~factor(month) - 1, data = use_data)) %>%
   setNames(c(names(use_data), paste0("month", 1:12)))
 
-# Define function to run negative binomial regression with month fe
+
+## Define function to run negative binomial regression with month fixed effects
 run_temp_reg <- function(data, temp_vars, ma = "") {
   
   # construct tmin / tmax &  month fe interaction term strings
@@ -39,7 +40,7 @@ run_temp_reg <- function(data, temp_vars, ma = "") {
   # fixed effects and controls
   controls <- paste(c("newyear", "july4", "veterans", 
                       "christmas", "thanksgiving", "memorial", "presidents",
-                      "labor", "columbus", "precip", "month2",
+                      "labor", "columbus", "precip_in", "month2",
                       "month3", "month4", "month5", "month6", "month7",
                       "month8", "month9", "month10", "month11", "month12",
                       "relevel(factor(decade), ref = 5)",
@@ -62,146 +63,189 @@ run_all_models <- function(use_data) {
   
   # NOAA model: both tmin and tmax
   models_list[["both"]] <- list(
-    run_temp_reg(noaa_data, c("tmin_f", "tmax_f")),
-    run_temp_reg(noaa_data, c("tmin_f", "tmax_f"), "3"),
-    run_temp_reg(noaa_data, c("tmin_f", "tmax_f"), "7")
+    run_temp_reg(use_data, c("tmin_f", "tmax_f")),
+    run_temp_reg(use_data, c("tmin_f", "tmax_f"), "3"),
+    run_temp_reg(use_data, c("tmin_f", "tmax_f"), "7")
   )
   
   # ERA5 model: both wetbmax and wetbmin
   models_list[["wetb_both"]] <- list(
-    run_temp_reg(era5_data, c("wetb_minmin", "wetb_maxmax")),
-    run_temp_reg(era5_data, c("wetb_minmin", "wetb_maxmax"), "3"),
-    run_temp_reg(era5_data, c("wetb_minmin", "wetb_maxmax"), "7")
+    run_temp_reg(use_data, c("wetb_min_citymin", "wetb_max_citymax")),
+    run_temp_reg(use_data, c("wetb_min_citymin", "wetb_max_citymax"), "3"),
+    run_temp_reg(use_data, c("wetb_min_citymin", "wetb_max_citymax"), "7")
   )
   
   return(models_list)
 }
 
+models_list <- run_all_models(use_data)
 
-#3# run all models and export results ##########################################
-models_list <- run_all_models(noaa_hils, era5_hils)
-
-# export both tmax & tmin models
+## Export regression results
 modelsummary(c("Air temperature (NOAA)" = models_list[["both"]], 
                "Wet bulb temperature (ERA5)" = models_list[["wetb_both"]]),
-             coef_omit = "relevel|Intercept|newyear|july4|veterans|christmas|thanksgiving|memorial|presidents|labor|columbus",
+             coef_omit = paste0(
+               "relevel|Intercept|newyear|july4|veterans|christmas|",
+               "thanksgiving|memorial|presidents|labor|columbus"),
+             coef_map = c("tmax_f" = "Maximum temperature",
+                          "tmax_f_3d" = "Maximum temperature",
+                          "tmax_f_7d" = "Maximum temperature",
+                          "wetb_max_citymax" = "Maximum temperature",
+                          "wetb_max_citymax_3d" = "Maximum temperature",
+                          "wetb_max_citymax_7d" = "Maximum temperature",
+                          "tmin_f" = "Minimum temperature",
+                          "tmin_f_3d" = "Minimum temperature",
+                          "tmin_f_7d" = "Minimum temperature",
+                          "wetb_min_citymin" = "Minimum temperature",
+                          "wetb_min_citymin_3d" = "Minimum temperature",
+                          "wetb_min_citymin_7d" = "Minimum temperature",
+                          "precip_in" = "Total precipitation",
+                          # month fixed effects
+                          "month2" = "February",
+                          "month3" = "March",
+                          "month4" = "April",
+                          "month5" = "May",
+                          "month6" = "June",
+                          "month7" = "July",
+                          "month8" = "August",
+                          "month9" = "September",
+                          "month10" = "October",
+                          "month11" = "November",
+                          "month12" = "December",
+                          # tmax interactions with months
+                          "month2:tmax_f" = "Max. temp. x Feb.",
+                          "month3:tmax_f" = "Max. temp. x Mar.",
+                          "month4:tmax_f" = "Max. temp. x Apr.",
+                          "month5:tmax_f" = "Max. temp. x May",
+                          "month6:tmax_f" = "Max. temp. x Jun.",
+                          "month7:tmax_f" = "Max. temp. x Jul.",
+                          "month8:tmax_f" = "Max. temp. x Aug.",
+                          "month9:tmax_f" = "Max. temp. x Sep.",
+                          "month10:tmax_f" = "Max. temp. x Oct.",
+                          "month11:tmax_f" = "Max. temp. x Nov.",
+                          "month12:tmax_f" = "Max. temp. x Dec.",
+                          "month2:tmax_f_3d" = "Max. temp. x Feb.",
+                          "month3:tmax_f_3d" = "Max. temp. x Mar.",
+                          "month4:tmax_f_3d" = "Max. temp. x Apr.",
+                          "month5:tmax_f_3d" = "Max. temp. x May",
+                          "month6:tmax_f_3d" = "Max. temp. x Jun.",
+                          "month7:tmax_f_3d" = "Max. temp. x Jul.",
+                          "month8:tmax_f_3d" = "Max. temp. x Aug.",
+                          "month9:tmax_f_3d" = "Max. temp. x Sep.",
+                          "month10:tmax_f_3d" = "Max. temp. x Oct.",
+                          "month11:tmax_f_3d" = "Max. temp. x Nov.",
+                          "month12:tmax_f_3d" = "Max. temp. x Dec.",
+                          "month2:tmax_f_7d" = "Max. temp. x Feb.",
+                          "month3:tmax_f_7d" = "Max. temp. x Mar.",
+                          "month4:tmax_f_7d" = "Max. temp. x Apr.",
+                          "month5:tmax_f_7d" = "Max. temp. x May",
+                          "month6:tmax_f_7d" = "Max. temp. x Jun.",
+                          "month7:tmax_f_7d" = "Max. temp. x Jul.",
+                          "month8:tmax_f_7d" = "Max. temp. x Aug.",
+                          "month9:tmax_f_7d" = "Max. temp. x Sep.",
+                          "month10:tmax_f_7d" = "Max. temp. x Oct.",
+                          "month11:tmax_f_7d" = "Max. temp. x Nov.",
+                          "month12:tmax_f_7d" = "Max. temp. x Dec.",
+                          "month2:wetb_max_citymax" = "Max. temp. x Feb.",
+                          "month3:wetb_max_citymax" = "Max. temp. x Mar.",
+                          "month4:wetb_max_citymax" = "Max. temp. x Apr.",
+                          "month5:wetb_max_citymax" = "Max. temp. x May",
+                          "month6:wetb_max_citymax" = "Max. temp. x Jun.",
+                          "month7:wetb_max_citymax" = "Max. temp. x Jul.",
+                          "month8:wetb_max_citymax" = "Max. temp. x Aug.",
+                          "month9:wetb_max_citymax" = "Max. temp. x Sep.",
+                          "month10:wetb_max_citymax" = "Max. temp. x Oct.",
+                          "month11:wetb_max_citymax" = "Max. temp. x Nov.",
+                          "month12:wetb_max_citymax" = "Max. temp. x Dec.",
+                          "month2:wetb_max_citymax_3d" = "Max. temp. x Feb.",
+                          "month3:wetb_max_citymax_3d" = "Max. temp. x Mar.",
+                          "month4:wetb_max_citymax_3d" = "Max. temp. x Apr.",
+                          "month5:wetb_max_citymax_3d" = "Max. temp. x May",
+                          "month6:wetb_max_citymax_3d" = "Max. temp. x Jun.",
+                          "month7:wetb_max_citymax_3d" = "Max. temp. x Jul.",
+                          "month8:wetb_max_citymax_3d" = "Max. temp. x Aug.",
+                          "month9:wetb_max_citymax_3d" = "Max. temp. x Sep.",
+                          "month10:wetb_max_citymax_3d" = "Max. temp. x Oct.",
+                          "month11:wetb_max_citymax_3d" = "Max. temp. x Nov.",
+                          "month12:wetb_max_citymax_3d" = "Max. temp. x Dec.",
+                          "month2:wetb_max_citymax_7d" = "Max. temp. x Feb.",
+                          "month3:wetb_max_citymax_7d" = "Max. temp. x Mar.",
+                          "month4:wetb_max_citymax_7d" = "Max. temp. x Apr.",
+                          "month5:wetb_max_citymax_7d" = "Max. temp. x May",
+                          "month6:wetb_max_citymax_7d" = "Max. temp. x Jun.",
+                          "month7:wetb_max_citymax_7d" = "Max. temp. x Jul.",
+                          "month8:wetb_max_citymax_7d" = "Max. temp. x Aug.",
+                          "month9:wetb_max_citymax_7d" = "Max. temp. x Sep.",
+                          "month10:wetb_max_citymax_7d" = "Max. temp. x Oct.",
+                          "month11:wetb_max_citymax_7d" = "Max. temp. x Nov.",
+                          "month12:wetb_max_citymax_7d" = "Max. temp. x Dec.",
+                          # tmin interactions with months
+                          "tmin_f:month2" = "Min. temp. x Feb.",
+                          "tmin_f:month3" = "Min. temp. x Mar.",
+                          "tmin_f:month4" = "Min. temp. x Apr.",
+                          "tmin_f:month5" = "Min. temp. x May",
+                          "tmin_f:month6" = "Min. temp. x Jun.",
+                          "tmin_f:month7" = "Min. temp. x Jul.",
+                          "tmin_f:month8" = "Min. temp. x Aug.",
+                          "tmin_f:month9" = "Min. temp. x Sep.",
+                          "tmin_f:month10" = "Min. temp. x Oct.",
+                          "tmin_f:month11" = "Min. temp. x Nov.",
+                          "tmin_f:month12" = "Min. temp. x Dec.",
+                          "tmin_f_3d:month2" = "Min. temp. x Feb.",
+                          "tmin_f_3d:month3" = "Min. temp. x Mar.",
+                          "tmin_f_3d:month4" = "Min. temp. x Apr.",
+                          "tmin_f_3d:month5" = "Min. temp. x May",
+                          "tmin_f_3d:month6" = "Min. temp. x Jun.",
+                          "tmin_f_3d:month7" = "Min. temp. x Jul.",
+                          "tmin_f_3d:month8" = "Min. temp. x Aug.",
+                          "tmin_f_3d:month9" = "Min. temp. x Sep.",
+                          "tmin_f_3d:month10" = "Min. temp. x Oct.",
+                          "tmin_f_3d:month11" = "Min. temp. x Nov.",
+                          "tmin_f_3d:month12" = "Min. temp. x Dec.",
+                          "tmin_f_7d:month2" = "Min. temp. x Feb.",
+                          "tmin_f_7d:month3" = "Min. temp. x Mar.",
+                          "tmin_f_7d:month4" = "Min. temp. x Apr.",
+                          "tmin_f_7d:month5" = "Min. temp. x May",
+                          "tmin_f_7d:month6" = "Min. temp. x Jun.",
+                          "tmin_f_7d:month7" = "Min. temp. x Jul.",
+                          "tmin_f_7d:month8" = "Min. temp. x Aug.",
+                          "tmin_f_7d:month9" = "Min. temp. x Sep.",
+                          "tmin_f_7d:month10" = "Min. temp. x Oct.",
+                          "tmin_f_7d:month11" = "Min. temp. x Nov.",
+                          "tmin_f_7d:month12" = "Min. temp. x Dec.",
+                          "wetb_min_citymin:month2" = "Min. temp. x Feb.",
+                          "wetb_min_citymin:month3" = "Min. temp. x Mar.",
+                          "wetb_min_citymin:month4" = "Min. temp. x Apr.",
+                          "wetb_min_citymin:month5" = "Min. temp. x May",
+                          "wetb_min_citymin:month6" = "Min. temp. x Jun.",
+                          "wetb_min_citymin:month7" = "Min. temp. x Jul.",
+                          "wetb_min_citymin:month8" = "Min. temp. x Aug.",
+                          "wetb_min_citymin:month9" = "Min. temp. x Sep.",
+                          "wetb_min_citymin:month10" = "Min. temp. x Oct.",
+                          "wetb_min_citymin:month11" = "Min. temp. x Nov.",
+                          "wetb_min_citymin:month12" = "Min. temp. x Dec.",
+                          "wetb_min_citymin_3d:month2" = "Min. temp. x Feb.",
+                          "wetb_min_citymin_3d:month3" = "Min. temp. x Mar.",
+                          "wetb_min_citymin_3d:month4" = "Min. temp. x Apr.",
+                          "wetb_min_citymin_3d:month5" = "Min. temp. x May",
+                          "wetb_min_citymin_3d:month6" = "Min. temp. x Jun.",
+                          "wetb_min_citymin_3d:month7" = "Min. temp. x Jul.",
+                          "wetb_min_citymin_3d:month8" = "Min. temp. x Aug.",
+                          "wetb_min_citymin_3d:month9" = "Min. temp. x Sep.",
+                          "wetb_min_citymin_3d:month10" = "Min. temp. x Oct.",
+                          "wetb_min_citymin_3d:month11" = "Min. temp. x Nov.",
+                          "wetb_min_citymin_3d:month12" = "Min. temp. x Dec.",
+                          "wetb_min_citymin_7d:month2" = "Min. temp. x Feb.",
+                          "wetb_min_citymin_7d:month3" = "Min. temp. x Mar.",
+                          "wetb_min_citymin_7d:month4" = "Min. temp. x Apr.",
+                          "wetb_min_citymin_7d:month5" = "Min. temp. x May",
+                          "wetb_min_citymin_7d:month6" = "Min. temp. x Jun.",
+                          "wetb_min_citymin_7d:month7" = "Min. temp. x Jul.",
+                          "wetb_min_citymin_7d:month8" = "Min. temp. x Aug.",
+                          "wetb_min_citymin_7d:month9" = "Min. temp. x Sep.",
+                          "wetb_min_citymin_7d:month10" = "Min. temp. x Oct.",
+                          "wetb_min_citymin_7d:month11" = "Min. temp. x Nov.",
+                          "wetb_min_citymin_7d:month12" = "Min. temp. x Dec."),
              vcov = "HC3",
              gof_omit = "^(?!.*Num)",
              stars = TRUE,
-             output = "tables/r&r/month_fe_int_main_models.docx")
-
-#4# run wald tests for joint significance ######################################
-
-# function to run wald test
-run_wald_tests <- function(model, prefix) {  
-  
-  # define which months go into which season
-  seasons <- list(
-    Winter = c(1, 2, 12),
-    Spring = c(3, 4, 5),
-    Summer = c(6, 7, 8),
-    Fall = c(9, 10, 11)
-  )
-  
-  # helper function to create hypothesis strings
-  create_hyp <- function(prefix, months) {
-    if (1 %in% months) {
-      hyp <- c(paste0(prefix, " = 0"))
-      months <- months[months != 1]
-    } else {
-      hyp <- c()
-    }
-    
-    # create both possible interaction term formats
-    format1 <- paste0(prefix, ":month", months, " = 0") 
-    format2 <- paste0("month", months, ":", prefix, " = 0") 
-    
-    # check which format exists in the model
-    coef_names <- names(coef(model))
-    use_format1 <- any(gsub(" = 0", "", format1) %in% coef_names)
-    use_format2 <- any(gsub(" = 0", "", format2) %in% coef_names)
-    
-    if (use_format1) {
-      return(c(hyp, format1))
-    } else if (use_format2) {
-      return(c(hyp, format2))
-    }
-    return(hyp)
-  }
-  
-  # run tests for each season
-  results <- list()
-  for (season_name in names(seasons)) {
-    months <- seasons[[season_name]]
-    hypotheses <- create_hyp(prefix, months)
-    
-    # run the test
-    test_result <- linearHypothesis(model, hypotheses, singular.ok = TRUE, 
-                                    vcov = hccm(model, type = "hc3"))
-    results[[season_name]] <- test_result
-    cat("\n", season_name, " Test Results:\n")
-    print(test_result)
-  }
-  
-  invisible(results)
-}
-
-# function to test both temperature variables together
-run_full_temp_tests <- function(model, min_var = "tmin_f", max_var = "tmax_f") {
-  # run tests for minimum temperature
-  cat(sprintf("=== %s Seasonal Tests ===\n", min_var))
-  tmin_results <- run_wald_tests(model, prefix = min_var)
-  
-  # run tests for maximum temperature
-  cat(sprintf("\n=== %s Seasonal Tests ===\n", max_var))
-  tmax_results <- run_wald_tests(model, prefix = max_var)
-  
-  # return both sets of results invisibly
-  invisible(list(tmin = tmin_results, tmax = tmax_results))
-}
-
-# run the wald tests for noaa models
-wald_noaa_both <- run_full_temp_tests(models_list[["both"]][[1]], 
-                                      "tmin_f", "tmax_f")
-wald_noaa_both3d <- run_full_temp_tests(models_list[["both"]][[2]],
-                                        "tmin_f_3d", "tmax_f_3d")
-wald_noaa_both7d <- run_full_temp_tests(models_list[["both"]][[3]], 
-                                        "tmin_f_7d", "tmax_f_7d")
-
-# run the wald tests for era5 models
-wald_era5_both <- run_full_temp_tests(models_list[["wetb_both"]][[1]], 
-                                      "wetb_minmin", "wetb_maxmax")
-wald_era5_both3d <- run_full_temp_tests(models_list[["wetb_both"]][[2]],
-                                        "wetb_minmin_3d", "wetb_maxmax_3d")
-wald_era5_both7d <- run_full_temp_tests(models_list[["wetb_both"]][[3]], 
-                                        "wetb_minmin_7d", "wetb_maxmax_7d")
-
-# clean and export wald test results
-clean_results <- function(wald_object, source, temp_type) {
-  do.call(rbind, lapply(names(wald_object), function(season) {
-    res <- wald_object[[season]]
-    data.frame(
-      source = source,
-      temp_type = temp_type,
-      season = season,
-      df = res$Df[2],
-      chisq = res$Chisq[2],
-      p_value = res$`Pr(>Chisq)`[2],
-      significant_95 = res$`Pr(>Chisq)`[2] < 0.05,
-      significant_90 = res$`Pr(>Chisq)`[2] < 0.10,
-      stringsAsFactors = FALSE
-    )
-  }))
-}
-
-# combine all results
-results_df <- rbind(
-  clean_results(wald_noaa_both$tmin, "NOAA", "tmin"),
-  clean_results(wald_noaa_both$tmax, "NOAA", "tmax"),
-  clean_results(wald_era5_both$tmin, "ERA5", "wetb_min"),
-  clean_results(wald_era5_both$tmax, "ERA5", "wetb_max")
-)
-
-# export
-write.csv(results_df, "tables/r&r/month_fe_wald_test_summary.csv", 
-          row.names = FALSE)
+             output = "output/appendix/tablea9.docx")

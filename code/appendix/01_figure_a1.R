@@ -9,7 +9,7 @@
 rm(list = ls())
 gc()
 
-# run the libraries script to load (and install if necessaary) 
+# run the libraries script to load (and install if necessary) 
 # all required packages
 source("code/00_libraries.R")
 
