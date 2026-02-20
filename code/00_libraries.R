@@ -17,7 +17,7 @@ packages <- c("tidyverse", "devtools", "furrr", "readr", "tibble", "dplyr",
              "sjmisc", "fixest", "foreign", "haven", "readxl", "stringdist", 
              "ggpubr", "ggExtra", "sandwich", "modelsummary", "jtools", 
              "huxtable", "here", "stargazer", "MASS", "terra", "rgdal", 
-             "raster", "gdalUtilities", "exactextractr", "sf", "tmap", 
+             "raster", "gdalUtilities", "exactextractr", "sf", "tmap", "pandoc", 
              "tmaptools", "stars", "rmapshaper", "animation", "slider",
              "mapview", "ggmap", "geosphere", "cowplot", "fastDummies", 
              "patchwork", "forcats", "zoo", "gender", "openxlsx", "fixest")
